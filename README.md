@@ -57,3 +57,6 @@ If you're using this code in a scientific publication please cite:
   year      = {2015},
 }
 ```
+
+#### License
+All my code is published under a BSD license, so feel free to reuse and/or share it. There are some dependencies which are under different licenses and/or patented. All those dependencies are located in the `external` directory.
