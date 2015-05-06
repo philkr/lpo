@@ -23,7 +23,20 @@ cmake .. -DCMAKE_BUILD_TYPE=Release -DDATA_DIR=/path/to/datasets
 make -j9
 ```
 Here "-DDATA_DIR=/path/to/datasets" is optional and can point to a directory containing the VOC2012, VOC2007 or COCO datset. Specify this path if you want to train or evaluate LPO on those dataset.
-"/path/to/datasets" can be any directory containing subdirectories 'VOC2012/ImageSets','VOC2012/SegmentationClass','VOC2012/Annotations','COCO/train2014','COCO/val2014',... and files 'COCO/instances_train2014.json' and 'COCO/instances_val2014.json'. The coco files can be downloaded from http://mscoco.org/, the PASCAL VOC dataset http://pascallin.ecs.soton.ac.uk/challenges/VOC/voc2012/index.html .
+
+"/path/to/datasets" can be any directory containing subdirectories:
+ * 'VOC2012/ImageSets'
+ * 'VOC2012/SegmentationClass',
+ * 'VOC2012/Annotations'
+ * 'COCO/train2014'
+ * 'COCO/val2014'
+ * ...
+
+and files:
+ * 'COCO/instances_train2014.json'
+ * 'COCO/instances_val2014.json'.
+
+The coco files can be downloaded from http://mscoco.org/, the PASCAL VOC dataset http://pascallin.ecs.soton.ac.uk/challenges/VOC/voc2012/index.html .
 
 The code should compile and run fine on both Linux and Mac OS, let me know if you have any difficulty or find a bug. For Windows you're on your own.
 
