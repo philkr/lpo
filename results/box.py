@@ -150,21 +150,21 @@ MAX_WINDOWS = args.M
 bo={}
 n ={}
 for p in args.dat:
-	name = p.replace('box/','').replace(".dat","")
+	name = p.replace('box/','').replace(".dat","").replace(".npz","")
 	if name in name_map:
 		name = name_map[ name ]
-	n[name],bo[name] = load( open(p,'rb') )
-	#print( n[name].astype(int) )
+	npz = np.load( p )
+	n[name],bo[name] = npz['arr_0'],npz['arr_1']
+	npz.close()
 	order = np.argsort(n[name])
 	n[name] = n[name][order]
 	bo[name] = bo[name][order]
-	
-	print( name, n[name][:3], *VUS(n[name],bo[name]) )
+	vus = VUS(n[name],bo[name])
 
-
-print( "VUS     Linear   Log    ABO    AREC" )
+print( "VUS                     Linear   Log      ABO      AREC" )
 for k in sorted(bo.keys()):
-	print( k, *VUS(n[k],bo[k]) )
+	vus = VUS(n[k],bo[k])
+	print( '%20s\t'%k+"  ".join(['%0.5f'%v for v in vus]) )
 
 if args.o!=None:
 	from matplotlib.backends.backend_pdf import PdfPages
