@@ -19,10 +19,12 @@ This implements the learning and inference/proposal algorithm described in "Lear
 ```bash
 mkdir build
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release -DDATA_DIR=/path/to/datasets
+cmake .. -DCMAKE_BUILD_TYPE=Release -DDATA_DIR=/path/to/datasets -DUSE_PYTHON=ON
 make -j9
 ```
-Here "-DDATA_DIR=/path/to/datasets" is optional and can point to a directory containing the VOC2012, VOC2007 or COCO datset. Specify this path if you want to train or evaluate LPO on those dataset.
+Here "-DUSE_PYTHON" specifies that the python wrapper should be built (highly recommended). You can use python 2.7 by specifying "-DUSE_PYTHON=2", any other argument will try to build a python 3 wrapper.
+
+The flag "-DDATA_DIR=/path/to/datasets" is optional and can point to a directory containing the VOC2012, VOC2007 or COCO datset. Specify this path if you want to train or evaluate LPO on those dataset.
 
 "/path/to/datasets" can be any directory containing subdirectories:
  * 'VOC2012/ImageSets'
