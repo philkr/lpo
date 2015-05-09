@@ -33,6 +33,7 @@
 #include <tuple>
 #include <queue>
 #include <iostream>
+#include <random>
 #include <Eigen/QR>
 
 static VectorXu8 findBoundary( const RMatrixXs & s ) {

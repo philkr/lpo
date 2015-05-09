@@ -29,6 +29,7 @@
 #include "oversegmentationmodel.h"
 #include "segmentation/segmentation.h"
 #include "util/util.h"
+#include <random>
 
 LPOModel::~LPOModel() {
 }
@@ -42,12 +43,16 @@ enum ModelID {
 	GBS_MODEL=2,
 };
 
-static std::vector< std::shared_ptr<ModelRegister> > model_registry_;
+std::vector< std::shared_ptr<ModelRegister> > & getModelRegistry() {
+	static std::vector< std::shared_ptr<ModelRegister> > model_registry;
+	return model_registry;
+}
+
 void registerModel( const std::shared_ptr<ModelRegister> & r ) {
-	model_registry_.push_back( r );
+	getModelRegistry().push_back( r );
 }
 std::string modelName( const std::shared_ptr<LPOModel> & p ) {
-	for( auto m: model_registry_ )
+	for( auto m: getModelRegistry() )
 		if( m->istype( p ) )
 			return m->name();
 	return "";
@@ -63,7 +68,7 @@ void saveLPOModel( std::ostream & os, const std::shared_ptr<LPOModel> & p ) {
 std::shared_ptr<LPOModel> loadLPOModel( std::istream & is ) {
 	std::shared_ptr<LPOModel> r;
 	std::string name = loadString( is );
-	for( auto m: model_registry_ )
+	for( auto m: getModelRegistry() )
 		if( m->name() == name ) {
 			r = m->make();
 			break;

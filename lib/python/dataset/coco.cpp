@@ -30,6 +30,7 @@
 #include "rapidjson/document.h"
 #include <string>
 #include <fstream>
+#include <random>
 #include "util/rasterize.h"
 
 static const int N_FOLDS = 20; // Since not all images fit in memory

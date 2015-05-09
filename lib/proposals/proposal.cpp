@@ -29,6 +29,7 @@
 #include "segmentation/iouset.h"
 #include "segmentation/segmentation.h"
 #include <iostream>
+#include <random>
 
 Proposals::Proposals() {
 }

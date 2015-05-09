@@ -46,7 +46,7 @@ static void downsample2( float *res, const float *im, int W, int H, int NW, int 
 					sm += _mm_loadu_ps( im+id+C*W );
 				if( 2*ni+1 < W && 2*nj+1 < H )
 					sm += _mm_loadu_ps( im+id+C+C*W );
-				sm *= 0.25;
+				sm *= _mm_set1_ps(0.25f);
 				for(int c = 0; c < C; c++)
 					pres[c] = sm[c];
 			}
