@@ -32,7 +32,7 @@ if(MSVC)
 endif()
 
 # Finding python and boost-python
-option( USE_PYTHON "Enable the python wrapper" OFF )
+option( USE_PYTHON "Enable the python wrapper" ON )
 
 # Finding Eigen
 find_package( Eigen3 3.2.0 )
