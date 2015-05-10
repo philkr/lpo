@@ -35,10 +35,24 @@ except:
 	compress = lambda x: x
 	decompress = lambda x: x
 
+def getDetector( detector="sf" ):
+	from lpo import contour
+	from os import path
+	basedir = path.dirname( path.dirname( path.abspath(__file__) ) )
+	if detector=='sf':
+		r = contour.StructuredForest()
+		r.load( path.join(basedir,'data','sf.dat') )
+	elif detector == "mssf":
+		r = contour.MultiScaleStructuredForest()
+		r.load( path.join(basedir,'data','sf.dat') )
+	else:
+		r = contour.DirectedSobel()
+	return r
+
 def loadAndOverSegDataset( loader, name, detector="sf", N_SPIX=1000 ):
 	import numpy as np
 	from pickle import dumps,loads
-	from lpo import contour,segmentation
+	from lpo import segmentation
 	from tempfile import gettempdir
 	FILE_NAME = '/%s/%s_%s_%d.dat'%(gettempdir(),name,detector,N_SPIX)
 	try:
@@ -63,18 +77,8 @@ def loadAndOverSegDataset( loader, name, detector="sf", N_SPIX=1000 ):
 	boxes = [e['boxes'] for e in data if 'boxes' in e]
 	
 	# Do the over-segmentation
-	if detector=='sf':
-		detector = contour.StructuredForest()
-		detector.load( '../data/sf.dat' )
-	elif detector=='ssf':
-		detector = contour.SharpStructuredForest()
-		detector.load( '../data/sf_sharp.dat' )
-	elif detector == "mssf":
-		detector = contour.MultiScaleStructuredForest()
-		detector.load( "../data/sf.dat" )
-	else:
-		detector = contour.DirectedSobel()
-	
+	detector = getDetector()
+
 	if detector != None:
 		over_segs = segmentation.generateGeodesicKMeans( detector, images, N_SPIX )
 	

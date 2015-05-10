@@ -50,8 +50,9 @@ args = parser.parse_args()
 def generate( prop, over_segs, save_names, segments=True, boxes=False, max_iou=0.9, box_overlap=False ):
 	BS = 100
 	for i in range(0,len(over_segs),BS):
+		ii = min(N,i+BS)
 		props = prop.propose( over_segs[i:i+BS], max_iou, box_overlap )
-		stdout.write('%3.1f%%\r'%(100*(i+BS)/len(over_segs)))
+		stdout.write('%3.1f%%\r'%(100*ii/len(over_segs)))
 		for p,fn in zip( props, save_names[i:i+BS] ):
 			saveProposalsHDF5( p, fn, segments, boxes )
 	print( "done"+" "*10 )
@@ -76,8 +77,7 @@ if args.dataset:
 
 if args.images:
 	from time import time
-	detector = contour.MultiScaleStructuredForest()
-	detector.load( "../data/sf.dat" )
+	detector = getDetector('mssf')
 	
 	if len(args.images)==1 and not path.exists(args.images[0]):
 		from glob import glob
@@ -86,29 +86,30 @@ if args.images:
 	BS,N = 100,len(args.images)
 	tl,ts,tp,to = 0,0,0,0
 	for i in range(0,N,BS):
+		ii = min(N,i+BS)
 		# Load the images
 		imgs,names = [],[]
-		stdout.write('Loading %3.1f%%  [%0.3fs  %0.3fs  %0.3fs  %0.3fs / im]\r'%(100*(i+BS)/N,tl/(i+1e-3),to/(i+1e-3),tp/(i+1e-3),ts/(i+1e-3)))
+		stdout.write('Loading %3.1f%%  [%0.3fs  %0.3fs  %0.3fs  %0.3fs / im]\r'%(100*(ii)/N,tl/(i+1e-3),to/(i+1e-3),tp/(i+1e-3),ts/(i+1e-3)))
 		tl -= time()
-		for nm in args.images[i:i+BS]:
+		for nm in args.images[i:ii]:
 			names.append( path.splitext(path.basename(nm))[0] )
 			imgs.append( imgproc.imread(nm) )
 		tl += time()
 		
-		stdout.write('Overseg %3.1f%%  [%0.3fs  %0.3fs  %0.3fs  %0.3fs / im]\r'%(100*(i+BS)/N,tl/(i + BS),to/(i+1e-3),tp/(i+1e-3),ts/(i+1e-3)))
+		stdout.write('Overseg %3.1f%%  [%0.3fs  %0.3fs  %0.3fs  %0.3fs / im]\r'%(100*(ii)/N,tl/ii,to/(i+1e-3),tp/(i+1e-3),ts/(i+1e-3)))
 		to -= time()
 		over_segs = segmentation.generateGeodesicKMeans( detector, imgs, 1000 )
 		to += time()
 		
-		stdout.write('Propose %3.1f%%  [%0.3fs  %0.3fs  %0.3fs  %0.3fs / im]\r'%(100*(i+BS)/N,tl/(i + BS),to/(i + BS),tp/(i+1e-3),ts/(i+1e-3)))
+		stdout.write('Propose %3.1f%%  [%0.3fs  %0.3fs  %0.3fs  %0.3fs / im]\r'%(100*(ii)/N,tl/ii,to/ii,tp/(i+1e-3),ts/(i+1e-3)))
 		tp -= time()
 		props = prop.propose( over_segs )
 		tp += time()
 		
-		stdout.write('Saving  %3.1f%%  [%0.3fs  %0.3fs  %0.3fs  %0.3fs / im]\r'%(100*(i+BS)/N,tl/(i + BS),to/(i + BS),tp/(i + BS),ts/(i+1e-3)))
+		stdout.write('Saving  %3.1f%%  [%0.3fs  %0.3fs  %0.3fs  %0.3fs / im]\r'%(100*(ii)/N,tl/ii,to/ii,tp/ii,ts/(i+1e-3)))
 		ts -= time()
 		for p,n in zip( props, names ):
 			saveProposalsHDF5( p, args.save_path+str(n)+'.hf5', not args.box or args.bb, args.box or args.bb )
 		ts += time()
-	stdout.write('Done    %3.1f%%  [%0.3fs  %0.3fs  %0.3fs  %0.3fs / im]\n'%(100*(i+BS)/N,tl/(i + BS),to/(i + BS),tp/(i + BS),ts/(i+1e-3)))
+	stdout.write('Done    %3.1f%%  [%0.3fs  %0.3fs  %0.3fs  %0.3fs / im]\n'%(100*(ii)/N,tl/ii,to/ii,tp/ii,ts/ii))
 

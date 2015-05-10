@@ -63,7 +63,9 @@ def evaluate( prop, over_segs, segmentations, name='', bos=None, pool_ss=None, m
 		pool_ss.append( pool_s )
 		bo,pool_s = np.vstack( bos ),np.hstack( pool_ss )
 		stdout.write('#prop = %0.3f  ABO = %0.3f\r'%(np.mean(pool_s),np.mean(bo[:,0])))
-	print( "LPO %05s & %d & %0.3f & %0.3f & %0.3f & %0.3f &  \\\\"%(name,np.mean(pool_s),np.mean(bo[:,0]),np.sum(bo[:,0]*bo[:,1])/np.sum(bo[:,1]), np.mean(bo[:,0]>=0.5), np.mean(bo[:,0]>=0.7) ) )
+	if len(pool_ss):
+		bo,pool_s = np.vstack( bos ),np.hstack( pool_ss )
+		print( "LPO %05s & %d & %0.3f & %0.3f & %0.3f & %0.3f &  \\\\"%(name,np.mean(pool_s),np.mean(bo[:,0]),np.sum(bo[:,0]*bo[:,1])/np.sum(bo[:,1]), np.mean(bo[:,0]>=0.5), np.mean(bo[:,0]>=0.7) ) )
 	return bos, pool_ss
 
 def evaluateBox( prop, over_segs, boxes, name='', bos=None, pool_ss=None, max_iou=0.9 ):
