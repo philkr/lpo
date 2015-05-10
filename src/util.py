@@ -63,7 +63,7 @@ def loadAndOverSegDataset( loader, name, detector="sf", N_SPIX=1000 ):
 			for i in over_segs:
 				over_seg.append( decompress(i) )
 			return over_seg,[decompress(i) for i in segmentations],[decompress(i) for i in boxes],names
-	except FileNotFoundError:
+	except IOError:
 		pass
 	
 	# Load the dataset
