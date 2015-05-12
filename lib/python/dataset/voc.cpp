@@ -87,20 +87,29 @@ static dict loadEntry( const std::string & name, bool load_seg = true, bool load
 		sprintf( buf, (base_dir+VOC_OBJECT).c_str(), name.c_str() );
 		RMatrixXus olbl = readIPNG16( buf );
 		if( !olbl.diagonalSize() )
+		{
+		    printf("Failed to read %s\n", buf);
 			return dict();
+		}
 		r["segmentation"] = cleanVOC(olbl);
 		
 		sprintf( buf, (base_dir+VOC_CLASS).c_str(), name.c_str() );
 		RMatrixXus clbl = readIPNG16( buf );
 		if( !clbl.diagonalSize() )
+		{
+			printf("Failed to read %s\n", buf);
 			return dict();
+		}
 		r["class"] = cleanVOC(clbl);
 	}
 	if (load_im) {
 		sprintf( buf, (base_dir+VOC_IMAGES).c_str(), name.c_str() );
 		std::shared_ptr<Image8u> im = imreadShared( buf );
 		if( !im || im->empty() )
+		{
+    		printf("Failed to read %s\n", buf);
 			return dict();
+		}
 		r["image"] = im;
 	}
 	sprintf( buf, (base_dir+VOC_ANNOT).c_str(), name.c_str() );
