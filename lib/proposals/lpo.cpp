@@ -237,7 +237,8 @@ void LPO::train(const std::vector< std::shared_ptr< LPOModelTrainer > >& trainer
 
     if (VERBOSE)
     {
-        printf(" =iteration_number [??  total = num_proposals] \t mean_best_accuracy   n_prop*f0/n_samples\n");
+        printf(" =iteration_number [Method_name num_proposals (num_models)  total = num_proposals]" \
+               "\t mean_best_accuracy   n_prop*f0/n_samples\n");
     }
 
     Timer timer;
