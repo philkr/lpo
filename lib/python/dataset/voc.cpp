@@ -139,6 +139,7 @@ list loadVOC( bool train, bool valid, bool test ) {
     bool read[3]={train,valid,test};
     list r;
     for( int i=0; i<3; i++ )
+    {
         if( read[i] ){
             const std::string filepath = base_dir+VOC_INFO<YEAR,detect>::image_sets[i];
             std::ifstream is_for_count(filepath), is(filepath);
@@ -153,14 +154,14 @@ list loadVOC( bool train, bool valid, bool test ) {
             switch(i)
             {
             case 0:
-                printf("Loading Pascal VOC training data..\n");
+                printf("Loading Pascal VOC training data...\n");
                 break;
             case 1:
-                printf("Loading Pascal VOC validation data..\n");
+                printf("Loading Pascal VOC validation data...\n");
                 break;
             case 2:
             default:
-                printf("Loading Pascal VOC test data..\n");
+                printf("Loading Pascal VOC test data...\n");
                 break;
             }
 
@@ -179,6 +180,8 @@ list loadVOC( bool train, bool valid, bool test ) {
                 progress += 1;
             }
         }
+    }
+    printf("Loading finished.\n");
     return r;
 }
 #define INST_YEAR(N) \
