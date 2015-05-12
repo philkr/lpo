@@ -111,7 +111,7 @@ if save_name == None or not path.exists( save_name ) or args.train:
 	prop.addGBS("hsv",[50,100,150,200,350,600],1000)
 
 	print( "Training", f0 )
-    stdout.flush()
+	stdout.flush()
 
 	if args.box:
 		# Compute the boxes for each of the segmentations
