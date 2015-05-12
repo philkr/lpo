@@ -139,11 +139,16 @@ if args.dataset[:3].lower() == 'voc':
 		over_segs,segmentations,boxes,names = loadVOCAndOverSeg( 'test', detector='mssf', year='2012_detect' )
 	else:
 		over_segs,segmentations,boxes,names = loadVOCAndOverSeg( 'test', detector='mssf' )
+
+	print( "Evaluating Pascal test data" )
+	stdout.flush()
 	if args.box:
 		all_bos,all_pool_ss = evaluateBox( prop, over_segs, boxes, name='(tst)', max_iou=args.iou )
 	else:
 		all_bos,all_pool_ss = evaluate( prop, over_segs, segmentations, name='(tst)', max_iou=args.iou )
 elif args.dataset.lower() == 'coco':
+	print( "Loading and evaluating Coco test data" )
+	stdout.flush()
 	all_bos,all_pool_ss = [],[]
 	for n in range(dataset.cocoNFolds()):
 		over_segs,segmentations,boxes,names = loadCOCOAndOverSeg( 'test', detector='mssf', fold=n )
