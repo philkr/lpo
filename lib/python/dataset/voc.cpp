@@ -130,6 +130,10 @@ list loadVOC( bool train, bool valid, bool test ) {
 	for( int i=0; i<3; i++ ) 
 		if( read[i] ){
 			std::ifstream is(base_dir+VOC_INFO<YEAR,detect>::image_sets[i]);
+			if (!is.is_open()) {
+				printf("File '%s' not found! Check if DATA_DIR is set properly.\n",(base_dir+VOC_INFO<YEAR,detect>::image_sets[i]).c_str());
+				throw std::invalid_argument("Failed to load dataset");
+			}
 			while(is.is_open() && !is.eof()) {
 				std::string l;
 				std::getline(is,l);
@@ -137,6 +141,8 @@ list loadVOC( bool train, bool valid, bool test ) {
 					dict d = loadEntry<YEAR>( l, !detect, true, difficult );
 					if( len( d ) )
 						r.append( d );
+					else
+						printf("Failed to load image '%s'!\n",l.c_str());
 				}
 			}
 		}

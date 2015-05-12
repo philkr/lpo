@@ -55,7 +55,12 @@ list loadCOCO( const std::string & name, int fold ) {
 	// Read the json file
 	Document doc;
 	std::ifstream t(buf);
+	if (!t.is_open()) {
+		printf("File '%s' not found! Check if DATA_DIR is set properly.\n",buf);
+		throw std::invalid_argument("Failed to load dataset");
+	}
 	std::string json_str = std::string(std::istreambuf_iterator<char>(t),std::istreambuf_iterator<char>());
+
 	doc.Parse( (char*)json_str.c_str() );
 	
 	// Go through all instance labels
