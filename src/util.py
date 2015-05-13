@@ -25,6 +25,9 @@
 	 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
+
+from __future__ import print_function
+
 from sys import stdout
 
 try:
@@ -57,6 +60,7 @@ def loadAndOverSegDataset( loader, name, detector="sf", N_SPIX=1000 ):
 	FILE_NAME = '/%s/%s_%s_%d.dat'%(gettempdir(),name,detector,N_SPIX)
 	try:
 		with open(FILE_NAME,'rb') as f:
+			print("Loading cache data from", FILE_NAME)
 			over_segs,segmentations,boxes,names = loads( f.read() )
 			f.close()
 			over_seg = segmentation.VecImageOverSegmentation()
