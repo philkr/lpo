@@ -32,17 +32,24 @@
 #include "lpo.h"
 #include "util.h"
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#include <boost/progress.hpp>
+
 
 template<typename BDetector>
 std::vector< std::shared_ptr<ImageOverSegmentation> > generateGeodesicKMeans1( const BDetector & det, const list & ims, int approx_N ) {
 	const int N = len(ims);
+    printf("Computing geodesic K-means for %i images...\n", N);
 	std::vector<Image8u*> img(N);
 	for( int i=0; i<N; i++ )
 		img[i] = extract<Image8u*>( ims[i] );
 	std::vector< std::shared_ptr<ImageOverSegmentation> > ios( N );
+    boost::progress_display progress(N);
 #pragma omp parallel for
 	for( int i=0; i<N; i++ )
+    {
 		ios[i] = geodesicKMeans( *img[i], det, approx_N, 2 );
+        progress += 1; // not thread safe, but glitches in progress bar are inconsequential
+    }
 	return ios;
 }
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS( ImageOverSegmentation_boundaryMap_overload, ImageOverSegmentation::boundaryMap, 0, 1 )

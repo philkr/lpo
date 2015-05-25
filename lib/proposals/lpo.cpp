@@ -220,9 +220,10 @@ std::vector<TrainingParameters> filterParameters( const std::vector<TrainingPara
 void LPO::train(const std::vector< std::shared_ptr< LPOModelTrainer > >& trainers, int n_samples, const float f0) {
 	static std::mt19937 rand;
 	const int N_RANDOM = 100, NIT=10;
-	
-	printf("%d training segments\n", n_samples );
-	
+
+    printf("training segments (%d samples)\n", n_samples );
+    std::cout.flush();
+
 	// Train the ensemble of models
 	VectorXf current_best_accuracy = VectorXf::Zero( n_samples );
 	
@@ -234,7 +235,13 @@ void LPO::train(const std::vector< std::shared_ptr< LPOModelTrainer > >& trainer
 			exhaustive_id.push_back( i );
 		else
 			sampled_id.push_back( i );
-	
+
+	if (VERBOSE)
+	{
+		printf(" =iteration_number [Method_name num_proposals (num_models)  total = num_proposals]" \
+		       "\t mean_best_accuracy   n_prop*f0/n_samples\n");
+	}
+
 	Timer timer;
 	for( int it=0; it<NIT; it++ ) {
 		timer.tic();

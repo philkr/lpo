@@ -32,6 +32,8 @@
 #include <unordered_map>
 #include <rapidxml.hpp>
 
+#include <boost/progress.hpp>
+
 #define XSTR( x ) STR( x )
 #define STR( x ) std::string( #x )
 #ifdef VOC_DIR
@@ -87,20 +89,29 @@ static dict loadEntry( const std::string & name, bool load_seg = true, bool load
 		sprintf( buf, (base_dir+VOC_OBJECT).c_str(), name.c_str() );
 		RMatrixXus olbl = readIPNG16( buf );
 		if( !olbl.diagonalSize() )
+		{
+			printf("Failed to read %s\n", buf);
 			return dict();
+		}
 		r["segmentation"] = cleanVOC(olbl);
 		
 		sprintf( buf, (base_dir+VOC_CLASS).c_str(), name.c_str() );
 		RMatrixXus clbl = readIPNG16( buf );
 		if( !clbl.diagonalSize() )
+		{
+			printf("Failed to read %s\n", buf);
 			return dict();
+		}
 		r["class"] = cleanVOC(clbl);
 	}
 	if (load_im) {
 		sprintf( buf, (base_dir+VOC_IMAGES).c_str(), name.c_str() );
 		std::shared_ptr<Image8u> im = imreadShared( buf );
 		if( !im || im->empty() )
+		{
+			printf("Failed to read %s\n", buf);
 			return dict();
+		}
 		r["image"] = im;
 	}
 	sprintf( buf, (base_dir+VOC_ANNOT).c_str(), name.c_str() );
@@ -127,13 +138,35 @@ list loadVOC( bool train, bool valid, bool test ) {
 	const std::string base_dir = voc_dir + "/VOC" + std::to_string(YEAR) + "/";
 	bool read[3]={train,valid,test};
 	list r;
-	for( int i=0; i<3; i++ ) 
-		if( read[i] ){
-			std::ifstream is(base_dir+VOC_INFO<YEAR,detect>::image_sets[i]);
-			if (!is.is_open()) {
+	for( int i=0; i<3; i++ )
+	{
+		if( read[i] ) {
+			const std::string filepath = base_dir+VOC_INFO<YEAR,detect>::image_sets[i];
+			std::ifstream is_for_count(filepath), is(filepath);
+			if (!is_for_count.is_open() or !is.is_open()) {
 				printf("File '%s' not found! Check if DATA_DIR is set properly.\n",(base_dir+VOC_INFO<YEAR,detect>::image_sets[i]).c_str());
 				throw std::invalid_argument("Failed to load dataset");
 			}
+
+			const size_t lines_count = std::count(std::istreambuf_iterator<char>(is_for_count),
+			                                      std::istreambuf_iterator<char>(), '\n');
+			is_for_count.close();
+			switch(i)
+			{
+			case 0:
+				printf("Loading Pascal VOC training data...\n");
+				break;
+			case 1:
+				printf("Loading Pascal VOC validation data...\n");
+				break;
+			case 2:
+			default:
+				printf("Loading Pascal VOC test data...\n");
+				break;
+			}
+
+			boost::progress_display progress(lines_count);
+
 			while(is.is_open() && !is.eof()) {
 				std::string l;
 				std::getline(is,l);
@@ -144,8 +177,11 @@ list loadVOC( bool train, bool valid, bool test ) {
 					else
 						printf("Failed to load image '%s'!\n",l.c_str());
 				}
+				progress += 1;
 			}
 		}
+	}
+	printf("Loading finished.\n");
 	return r;
 }
 #define INST_YEAR(N) \
