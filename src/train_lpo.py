@@ -25,6 +25,9 @@
 	 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
+
+from __future__ import print_function
+
 from lpo import *
 from util import *
 import numpy as np
@@ -111,6 +114,8 @@ if save_name == None or not path.exists( save_name ) or args.train:
 	prop.addGBS("hsv",[50,100,150,200,350,600],1000)
 
 	print( "Training", f0 )
+	stdout.flush()
+
 	if args.box:
 		# Compute the boxes for each of the segmentations
 		boxes = [proposals.Proposals(s,np.eye(np.max(s)+1).astype(bool)).toBoxes() for s in segmentations]
@@ -137,11 +142,16 @@ if args.dataset[:3].lower() == 'voc':
 		over_segs,segmentations,boxes,names = loadVOCAndOverSeg( 'test', detector='mssf', year='2012_detect' )
 	else:
 		over_segs,segmentations,boxes,names = loadVOCAndOverSeg( 'test', detector='mssf' )
+
+	print( "Evaluating Pascal test data" )
+	stdout.flush()
 	if args.box:
 		all_bos,all_pool_ss = evaluateBox( prop, over_segs, boxes, name='(tst)', max_iou=args.iou )
 	else:
 		all_bos,all_pool_ss = evaluate( prop, over_segs, segmentations, name='(tst)', max_iou=args.iou )
 elif args.dataset.lower() == 'coco':
+	print( "Loading and evaluating Coco test data" )
+	stdout.flush()
 	all_bos,all_pool_ss = [],[]
 	for n in range(dataset.cocoNFolds()):
 		over_segs,segmentations,boxes,names = loadCOCOAndOverSeg( 'test', detector='mssf', fold=n )
