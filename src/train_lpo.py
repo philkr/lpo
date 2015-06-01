@@ -47,7 +47,7 @@ parser.add_argument('-f0', dest='f0', type=float, default=0.1,
 parser.add_argument('-d', dest='dataset', type=str, default='VOC',
                    help='The dataset to train and evaluate on (VOC, VOCall or COCO)')
 parser.add_argument('-N', dest='N', type=int, default=-1,
-                   help='Maximal number of trainig images')
+                   help='Maximal number of training images')
 parser.add_argument('-iou', type=float, default=0.9,
                    help='Max IoU threshold for duplicate removal')
 parser.add_argument('-s', type=str, help='Save the best overlap and pool_s in a .npy file')
