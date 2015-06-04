@@ -36,6 +36,8 @@
 
 static const bool VERBOSE = true;
 
+LPO::LPO() : box_nms_(false), max_iou_(0.9) {
+}
 void LPO::addGlobal() {
 	models_.push_back( std::make_shared<GlobalCRFModel>() );
 }
@@ -71,7 +73,9 @@ void LPO::load( const std::string & fn ) {
 	std::ifstream is( fn.c_str(), std::ios::binary | std::ios::in );
 	load( is );
 }
-std::vector< Proposals > LPO::propose(const ImageOverSegmentation& ios, float max_iou, int model_id, bool box_nms) const {
+std::vector< Proposals > LPO::propose(const ImageOverSegmentation& ios, float max_iou, int model_id, int box_nms) const {
+	if( box_nms < 0 ) box_nms = box_nms_;
+	if( max_iou < 0 ) max_iou = max_iou_;
 	std::vector< Proposals > all_prop;
 	// Generate all proposals
 	for( int i=0; i<models_.size(); i++ )
@@ -353,4 +357,10 @@ std::vector< std::string > LPO::modelTypes() const {
 	for( auto m: models_ )
 		r.push_back( modelName(m) );
 	return r;
+}
+void LPO::setBoxNMS(bool v) {
+	box_nms_ = v;
+}
+void LPO::setMaxIOU(float v) {
+	max_iou_ = v;
 }
