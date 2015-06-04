@@ -1,7 +1,7 @@
 /*
     Copyright (c) 2015, Philipp Krähenbühl
     All rights reserved.
-	
+
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
         * Redistributions of source code must retain the above copyright
@@ -12,7 +12,7 @@
         * Neither the name of the Stanford University nor the
         names of its contributors may be used to endorse or promote products
         derived from this software without specific prior written permission.
-	
+
     THIS SOFTWARE IS PROVIDED BY Philipp Krähenbühl ''AS IS'' AND ANY
     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -60,7 +60,7 @@ void LPO::load( std::istream & is ) {
 	n=0;
 	is.read( (char*)&n, sizeof(n) );
 	models_.clear();
-	for( int i=0; i<n; i++ ) 
+	for( int i=0; i<n; i++ )
 		models_.push_back( loadLPOModel(is) );
 }
 void LPO::save( const std::string & fn ) const {
@@ -74,8 +74,8 @@ void LPO::load( const std::string & fn ) {
 std::vector< Proposals > LPO::propose(const ImageOverSegmentation& ios, float max_iou, int model_id, bool box_nms) const {
 	std::vector< Proposals > all_prop;
 	// Generate all proposals
-	for( int i=0; i<models_.size(); i++ ) 
-		if( i==model_id || model_id==-1 ){
+	for( int i=0; i<models_.size(); i++ )
+		if( i==model_id || model_id==-1 ) {
 			const std::vector<Proposals> & props = models_[i]->propose( ios );
 			for( const Proposals & p: props ) {
 				// Can we merge some proposal maps?
@@ -83,7 +83,7 @@ std::vector< Proposals > LPO::propose(const ImageOverSegmentation& ios, float ma
 				for( Proposals & pp: all_prop ) {
 					if( pp.s == p.s ) {
 						eassert( pp.p.cols() == p.p.cols() );
-						
+
 						// Merge the proposal maps
 						merge = true;
 						RMatrixXb new_p( pp.p.rows()+p.p.rows(), p.p.cols() );
@@ -186,12 +186,12 @@ std::vector<TrainingParameters> filterParameters( const std::vector<TrainingPara
 	eassert( params.size()>0 );
 	// Compute the transportation cost
 	RMatrixXf score = 1.f-scoreMatrix( params ).array();
-	
+
 	// Compute the facility cost
 	VectorXf f = VectorXf::Constant(params.size(),f0);
 	for( int i=0; i<params.size(); i++ )
 		f[i] = params[i].nProposals()*f0;
-	
+
 	VectorXb r;
 	{
 		VectorXb x[1];
@@ -202,10 +202,10 @@ std::vector<TrainingParameters> filterParameters( const std::vector<TrainingPara
 			x[1] = Floc::jms( f, score );
 		if( N > 2 )
 			x[2] = Floc::myz( f, score );
-		
+
 		for( int i=0; i<N; i++ )
 			s[i] = Floc::energy( f, score, x[i] );
-			
+
 // 		printf("Filter greedy = %f   jms = %f   myz = %f\n", s[0], s[1], s[2] );
 		r = x[0];
 		float rs = s[0];
@@ -221,14 +221,14 @@ void LPO::train(const std::vector< std::shared_ptr< LPOModelTrainer > >& trainer
 	static std::mt19937 rand;
 	const int N_RANDOM = 100, NIT=10;
 
-    printf("training segments (%d samples)\n", n_samples );
-    std::cout.flush();
+	printf("training segments (%d samples)\n", n_samples );
+	std::cout.flush();
 
 	// Train the ensemble of models
 	VectorXf current_best_accuracy = VectorXf::Zero( n_samples );
-	
+
 	std::vector<TrainingParameters> parameters;
-	
+
 	std::vector< int > exhaustive_id, sampled_id;
 	for( int i=0; i<trainers.size(); i++ )
 		if(!!std::dynamic_pointer_cast<ExhaustiveLPOModelTrainer>(trainers[i]))
@@ -236,8 +236,7 @@ void LPO::train(const std::vector< std::shared_ptr< LPOModelTrainer > >& trainer
 		else
 			sampled_id.push_back( i );
 
-	if (VERBOSE)
-	{
+	if (VERBOSE) {
 		printf(" =iteration_number [Method_name num_proposals (num_models)  total = num_proposals]" \
 		       "\t mean_best_accuracy   n_prop*f0/n_samples\n");
 	}
@@ -245,10 +244,10 @@ void LPO::train(const std::vector< std::shared_ptr< LPOModelTrainer > >& trainer
 	Timer timer;
 	for( int it=0; it<NIT; it++ ) {
 		timer.tic();
-		
+
 		// Genrate new training parameters
 		std::vector<TrainingParameters> new_parameters;
-		
+
 		// Add exhaustive params
 		for( int i: exhaustive_id ) {
 			std::vector<VectorXf> all_params = std::dynamic_pointer_cast<ExhaustiveLPOModelTrainer>(trainers[i])->allParameters();
@@ -260,38 +259,38 @@ void LPO::train(const std::vector< std::shared_ptr< LPOModelTrainer > >& trainer
 				new_parameters.push_back( np );
 			}
 		}
-		
+
 		// Add sampled trainers
 // 		VectorXi smpl = randomChoose( 1-current_best_accuracy.array(), N_RANDOM );
 		VectorXi smpl = randomChoose( n_samples, N_RANDOM );
 		if( sampled_id.size() ) {
-#pragma omp parallel for schedule(dynamic)
+			#pragma omp parallel for schedule(dynamic)
 			for( int i=0; i<smpl.size(); i++ )
 				for( int n_rand=0; n_rand < 5; n_rand++ ) {
 					TrainingParameters np;
 					np.trainer_id = sampled_id[ rand()%sampled_id.size() ];
 					np.trainer = trainers[ np.trainer_id ];
 					if ( np.fit( smpl[i] ) ) {
-#pragma omp critical
+						#pragma omp critical
 						new_parameters.push_back( np );
 						break;
 					}
 				}
 		}
 		timer.toc("generate");
-		
+
 		for( TrainingParameters & p: new_parameters )
 			p.evaluate();
 		timer.toc("evaluate");
-		
+
 		// FLOC
 		parameters.insert( parameters.end(), new_parameters.begin(), new_parameters.end() );
 		parameters = filterParameters( parameters, f0 );
 		new_parameters.clear();
 		timer.toc("floc");
-		
+
 		current_best_accuracy = scoreMatrix( parameters ).colwise().maxCoeff();
-		
+
 		// Print some statistics
 		if( VERBOSE ) {
 			int n_prop = 0;
@@ -304,10 +303,10 @@ void LPO::train(const std::vector< std::shared_ptr< LPOModelTrainer > >& trainer
 			std::string info_s;
 			for( auto c: cnt )
 				info_s += " "+c.first+" = "+std::to_string( cnt_prop[c.first] )+" ("+std::to_string( c.second )+")";
-			
+
 			printf("  =%d [%s  total = %d] \t %f   %f\n", it, info_s.c_str(), n_prop, current_best_accuracy.array().mean(), n_prop*f0/n_samples );
 		}
-		
+
 		// Refit
 		for( TrainingParameters p: parameters )
 			if( p.refit( p.accuracy.array()>=current_best_accuracy.array() ) ) {
@@ -315,14 +314,14 @@ void LPO::train(const std::vector< std::shared_ptr< LPOModelTrainer > >& trainer
 				new_parameters.push_back( p );
 			}
 		timer.toc("refit & evaluate");
-		
+
 		// FLOC
 		parameters.insert( parameters.end(), new_parameters.begin(), new_parameters.end() );
 		parameters = filterParameters( parameters, f0 );
 		timer.toc("floc");
-		
+
 		current_best_accuracy = scoreMatrix( parameters ).colwise().maxCoeff();
-		
+
 		// Print some statistics
 		if( VERBOSE ) {
 			int n_prop = 0;
@@ -335,7 +334,7 @@ void LPO::train(const std::vector< std::shared_ptr< LPOModelTrainer > >& trainer
 			std::string info_s;
 			for( auto c: cnt )
 				info_s += " "+c.first+" = "+std::to_string( cnt_prop[c.first] )+" ("+std::to_string( c.second )+")";
-			
+
 			printf("IT=%d [%s  total = %d] \t %f   %f\n", it, info_s.c_str(), n_prop, current_best_accuracy.array().mean(), n_prop*f0/n_samples );
 		}
 	}
@@ -346,10 +345,10 @@ void LPO::train(const std::vector< std::shared_ptr< LPOModelTrainer > >& trainer
 	for( int i=0; i<trainers.size(); i++ )
 		models_[i]->setParameters( params[i] );
 }
-int LPO::nModels() const{
+int LPO::nModels() const {
 	return models_.size();
 }
-std::vector< std::string > LPO::modelTypes() const{
+std::vector< std::string > LPO::modelTypes() const {
 	std::vector< std::string > r;
 	for( auto m: models_ )
 		r.push_back( modelName(m) );

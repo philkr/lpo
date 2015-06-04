@@ -1,7 +1,7 @@
 /*
     Copyright (c) 2015, Philipp Krähenbühl
     All rights reserved.
-	
+
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
         * Redistributions of source code must retain the above copyright
@@ -12,7 +12,7 @@
         * Neither the name of the Stanford University nor the
         names of its contributors may be used to endorse or promote products
         derived from this software without specific prior written permission.
-	
+
     THIS SOFTWARE IS PROVIDED BY Philipp Krähenbühl ''AS IS'' AND ANY
     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -40,19 +40,19 @@ static int verbose = 0;
 
 // #define ONE_SLACK
 
-BinaryCRFFeatures::~BinaryCRFFeatures(){
+BinaryCRFFeatures::~BinaryCRFFeatures() {
 }
-TrainingLoss::~TrainingLoss(){
+TrainingLoss::~TrainingLoss() {
 }
 float TrainingLoss::evaluate( const VectorXf & X, const VectorXf & gt ) const {
 	return evaluate( ( (gt.array()==1).cast<float>()*   X.array()  ).sum(), ( (gt.array()==0).cast<float>()*   X.array()  ).sum(),
-					 ( (gt.array()==1).cast<float>()*(1-X.array()) ).sum(), ( (gt.array()==0).cast<float>()*(1-X.array()) ).sum() );
+	                 ( (gt.array()==1).cast<float>()*(1-X.array()) ).sum(), ( (gt.array()==0).cast<float>()*(1-X.array()) ).sum() );
 }
 
-MaxMarginObjective::~MaxMarginObjective(){
+MaxMarginObjective::~MaxMarginObjective() {
 }
 BinaryCRF::BinaryCRF() {
-	
+
 }
 bool BinaryCRF::operator==(const BinaryCRF & o) const {
 	return unary_ == o.unary_ && pairwise_ == o.pairwise_;
@@ -106,7 +106,7 @@ RMatrixXf BinaryCRF::diverseMBest(const std::shared_ptr< BinaryCRFFeatures > &f,
 	for( int i=0; i<M; i++ ) {
 		VectorXf x;
 		r.col(i) = x = inference( u, g, p );
-		
+
 		// Subtract the current loss
 		const int NP = x.cast<int>().array().sum();
 		const int NN = x.size() - NP;
@@ -139,7 +139,7 @@ VectorXf BinaryCRF::inferenceWithIOU( const VectorXf & u, const Edges & g, const
 		// TODO: v1 is might be wrong!!
 		float v0=0, v1 = b.dot(b)+1000;
 		// TODO: Doing bisectin twice is inefficient figure out how to make this faster!!!!
-		
+
 		// Bisection search [instead of a parametric cut]
 		// Solve for E(X) s.t. IoU(X) < l
 		while( v0+EPS<v1 ) {
@@ -147,9 +147,9 @@ VectorXf BinaryCRF::inferenceWithIOU( const VectorXf & u, const Edges & g, const
 			VectorXf uu = u + v*a - v*l*b;
 			VectorXf X = inference( uu, g, w );
 			neval++;
-			
+
 			float dv = a.dot(X)-l*a.dot(a)-l*b.dot(X);
-			
+
 			if( dv > 0 )
 				v0 = v;
 			else// if ( dv < 0 )
@@ -157,11 +157,11 @@ VectorXf BinaryCRF::inferenceWithIOU( const VectorXf & u, const Edges & g, const
 		}
 		if( verbose>3 ) printf("%f %f\n", v0, v1 );
 		niter++;
-		
+
 		// Compute X s.t. IoU(X) < l
 		VectorXf uu = u + v1*a - v1*l*b;
 		VectorXf X = inference( uu, g, w );
-		
+
 		// Compute the energy of the labeling
 		float e = energy( X, u, g, w ) + k*a.dot(X)/(a.dot(a)+b.dot(X));
 		if( e < best_e ) {
@@ -181,7 +181,7 @@ VectorXf BinaryCRF::inferenceWithIOU( const VectorXf & u, const Edges & g, const
 		best_e = e;
 		best_X = X;
 	}
-	
+
 	if( verbose>3 ) {
 		printf("SOLVED %f   %f   [%f + %f]   %f\n", best_e, energy( best_X, u, g, w ) + a.dot(best_X)/(a.dot(a)+b.dot(best_X)), energy( best_X, u, g, w ), a.dot(best_X)/(a.dot(a)+b.dot(best_X)), energy( l.cast<float>(), u, g, w )-(energy( best_X, u, g, w ) + a.dot(best_X)/(a.dot(a)+b.dot(best_X))) );
 		printf("%f %f %f %f\n", a.dot(best_X), b.dot(best_X), best_X.dot(best_X), a.dot(a) );
@@ -194,7 +194,7 @@ VectorXf BinaryCRF::inferenceWithLoss( const VectorXf & u, const Edges & g, cons
 			return inferenceWithIOU( u, g, w, l, dynamic_cast<const JaccardLoss&>(loss).w() );
 		throw std::invalid_argument( "For now only linear or IoU losses are supported!" );
 	}
-	
+
 	// Find the linear place of the loss
 	const int NP = l.cast<int>().array().sum();
 	const int NN = l.size() - NP;
@@ -202,7 +202,7 @@ VectorXf BinaryCRF::inferenceWithLoss( const VectorXf & u, const Edges & g, cons
 	const float lp = loss.evaluate( NP-1, 0, 1, NN );
 	const float ln = loss.evaluate( NP  , 1, 0, NN-1 );
 	VectorXf ll = (l.array()>0).select(VectorXf::Constant(l.size(),l0-lp),(l.array()==0).cast<float>()*(ln-l0));
-	
+
 	return inference( u - ll, g, w ).cast<float>();
 }
 static VectorXf computeUnaryF( const VectorXf & s, const BinaryCRFFeatures & f ) {
@@ -254,10 +254,10 @@ ParameterConstraint BinaryCRF::generateConstraint( const BinaryCRFFeatures & f, 
 	r.du   = computeUnaryF   ( lf, f ) - computeUnaryF   ( X, f );
 	r.dp   = computePairwiseF( lf, f ) - computePairwiseF( X, f );
 	r.loss = loss.evaluate( X, lf ) - loss0;
-	
+
 	if (verbose>3)
 		printf("%f + %f + %f <= 0 [%f]\n", r.du.dot(unary_), r.dp.dot(pairwise_), r.loss, r.du.dot(unary_) + r.dp.dot(pairwise_) + r.loss );
-	
+
 	return r;
 }
 
@@ -271,7 +271,7 @@ void BinaryCRF::train( const std::shared_ptr<BinaryCRFFeatures> & f, const Vecto
 	train( std::vector< std::shared_ptr<BinaryCRFFeatures> >( 1, f ), std::vector<VectorXs>( 1, l ) );
 }
 void BinaryCRF::train( const std::vector< std::shared_ptr<BinaryCRFFeatures> > & f, const std::vector<VectorXs> & l
-					  ) {
+                     ) {
 	train( f, l, HammingLoss() );
 }
 void BinaryCRF::train( const std::vector< std::shared_ptr<BinaryCRFFeatures> > & f, const std::vector<VectorXs> & l, const TrainingLoss & loss ) {
@@ -287,8 +287,7 @@ void BinaryCRF::train( const std::vector< std::shared_ptr<BinaryCRFFeatures> > &
 			}
 		}
 		trainNSlack( ff, ll, loss );
-	}
-	else
+	} else
 		trainNSlack( f, l, loss );
 }
 void BinaryCRF::train1Slack( const std::vector< std::shared_ptr<BinaryCRFFeatures> > & f, const std::vector<VectorXs> & l, const TrainingLoss & loss ) {
@@ -303,10 +302,11 @@ void BinaryCRF::train1Slack( const std::vector< std::shared_ptr<BinaryCRFFeature
 #endif
 	eassert( N == l.size() );
 	eassert( N > 0 );
-	
+
 	OneSlackObjective objective( 100.0 );
-	Timer t; t.print_on_exit_ = false;
-	
+	Timer t;
+	t.print_on_exit_ = false;
+
 	// Initialize the parameters
 	unary_ = VectorXf::Zero( f[0]->unary().cols() );
 	pairwise_ = VectorXf::Zero( f[0]->pairwise().cols() );
@@ -320,11 +320,11 @@ void BinaryCRF::train1Slack( const std::vector< std::shared_ptr<BinaryCRFFeature
 		// Collect a bunch of (new) constraints
 		t.tic();
 		ParameterConstraint sc;
-#pragma omp parallel for num_threads(N_THREAD)
+		#pragma omp parallel for num_threads(N_THREAD)
 		for( int i=0; i<N; i++ ) {
 			if (!niter || cached_constraint[i].slack(unary_,pairwise_)+EPS < last_slack)
 				cached_constraint[i] = generateConstraint( *f[i], l[i], loss );
-#pragma omp critical
+			#pragma omp critical
 			sc += cached_constraint[i];
 		}
 		sc *= 1.0 / N;
@@ -333,19 +333,19 @@ void BinaryCRF::train1Slack( const std::vector< std::shared_ptr<BinaryCRFFeature
 		for( auto c: constraints )
 			best_slack = std::max( best_slack, c.slack( unary_, pairwise_ ) );
 		const float new_slack = sc.slack( unary_, pairwise_ );
-		
+
 		if( new_slack <= best_slack+EPS )
 			break;
-		
+
 		constraints.push_back( sc );
 		age.push_back( 0 );
 		t.toc("Slack comp");
-		
+
 		// Solve for the parameters
 		float o_val = 0;
 		std::tie(unary_,pairwise_) = objective.optimize( constraints, &o_val );
 		t.toc("QP");
-		
+
 		last_slack = sc.slack( unary_, pairwise_ );
 		// Retire old constraints
 		int j=0;
@@ -362,19 +362,19 @@ void BinaryCRF::train1Slack( const std::vector< std::shared_ptr<BinaryCRFFeature
 		age.resize(j);
 		constraints.resize(j);
 		t.toc("retirement");
-		
-		if( verbose > 2 ){
+
+		if( verbose > 2 ) {
 			float e2=0;
-#pragma omp parallel for num_threads(N_THREAD)
+			#pragma omp parallel for num_threads(N_THREAD)
 			for( int i=0; i<N; i++ ) {
 				VectorXf X = map( f[i] );
 				const float ls = loss.evaluate( X, l[i].cast<float>() );
-#pragma omp atomic
+				#pragma omp atomic
 				e2 += ls;
 			}
 			printf("[%d] loss = %0.3f .. %0.3f [%f]\n",niter, sc.loss, e2 / N, new_slack );
 		}
-		
+
 		if( verbose > 1 )
 			printf(" Optimized to %f  [%f]\n\n", sc.loss, o_val );
 	}
@@ -398,11 +398,11 @@ void BinaryCRF::trainNSlack( const std::vector< std::shared_ptr<BinaryCRFFeature
 
 	NSlackObjective objective( 100 );
 //	Timer t;
-		
+
 	// Initialize the parameters
 	unary_ = VectorXf::Zero( f[0]->unary().cols() );
 	pairwise_ = VectorXf::Zero( f[0]->pairwise().cols() );
-	
+
 	std::vector< std::vector< ParameterConstraint > > constraints(N);
 	// Strat training
 	int niter=0;
@@ -412,12 +412,12 @@ void BinaryCRF::trainNSlack( const std::vector< std::shared_ptr<BinaryCRFFeature
 		int new_constraints = 0;
 		e1 = 0;
 		float sum_loss = 0;
-#pragma omp parallel for num_threads(N_THREAD)
+		#pragma omp parallel for num_threads(N_THREAD)
 		for( int i=0; i<N; i++ ) {
 //			t.tic();
 			ParameterConstraint c = generateConstraint( *f[i], l[i], loss );
 //			t.toc("Const Generation");
-			
+
 			float best_slack = -1e10;
 			for( auto cc: constraints[i]  )
 				best_slack = std::max( best_slack, cc.slack( unary_, pairwise_ ) );
@@ -430,13 +430,13 @@ void BinaryCRF::trainNSlack( const std::vector< std::shared_ptr<BinaryCRFFeature
 			}
 //			t.toc("Slack comp");
 		}
-		if( verbose > 2 ){
+		if( verbose > 2 ) {
 			float e2=0;
-#pragma omp parallel for num_threads(N_THREAD)
+			#pragma omp parallel for num_threads(N_THREAD)
 			for( int i=0; i<N; i++ ) {
 				VectorXf X = map( f[i] );
 				const float ls = loss.evaluate( X, l[i].cast<float>() );
-#pragma omp atomic
+				#pragma omp atomic
 				e2 += ls;
 			}
 			printf("[%d] loss = %0.3f .. %0.3f [%f]\n",niter, sum_loss / N, e2 / N, e1 / N );
@@ -457,11 +457,11 @@ void BinaryCRF::trainNSlack( const std::vector< std::shared_ptr<BinaryCRFFeature
 			printf(" Optimized to %f\n", o_val );
 	}
 	float e2=0;
-#pragma omp parallel for num_threads(N_THREAD)
+	#pragma omp parallel for num_threads(N_THREAD)
 	for( int i=0; i<N; i++ ) {
 		VectorXf X = map( f[i] );
 		const float ls = loss.evaluate( X, l[i].cast<float>() );
-#pragma omp atomic
+		#pragma omp atomic
 		e2 += ls;
 	}
 	if( verbose > 0 )
@@ -482,15 +482,15 @@ void BinaryCRF::save( std::ostream & os ) const {
 	saveMatrixX( os, pairwise_ );
 }
 void BinaryCRF::setUnary(const VectorXf& unary) {
-    unary_ = unary;
+	unary_ = unary;
 }
 void BinaryCRF::setPairwise(const VectorXf& pairwise) {
-    pairwise_ = pairwise;
+	pairwise_ = pairwise;
 }
 const VectorXf & BinaryCRF::unary() const {
-    return unary_;
+	return unary_;
 }
 const VectorXf & BinaryCRF::pairwise() const {
-    return pairwise_;
+	return pairwise_;
 }
 

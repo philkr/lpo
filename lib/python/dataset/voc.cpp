@@ -1,7 +1,7 @@
 /*
     Copyright (c) 2015, Philipp Krähenbühl
     All rights reserved.
-	
+
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
         * Redistributions of source code must retain the above copyright
@@ -12,7 +12,7 @@
         * Neither the name of the Stanford University nor the
         names of its contributors may be used to endorse or promote products
         derived from this software without specific prior written permission.
-	
+
     THIS SOFTWARE IS PROVIDED BY Philipp Krähenbühl ''AS IS'' AND ANY
     EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -55,18 +55,18 @@ RMatrixXs cleanVOC( const RMatrixXus& lbl ) {
 	return r;
 }
 static std::tuple<RMatrixXi,std::vector<std::string> > readBoxes( const std::string & annot, bool difficult ) {
-	
+
 	using namespace rapidxml;
 	xml_document<> doc;    // character type defaults to char
 	std::ifstream t(annot);
 	std::string xml_str = std::string(std::istreambuf_iterator<char>(t),std::istreambuf_iterator<char>());
 	doc.parse<0>( (char*)xml_str.c_str() );
-	
+
 	xml_node<> *annotation = doc.first_node("annotation");
 	std::vector<Vector4i> boxes;
 	std::vector<std::string> names;
-	for( xml_node<> *objects = annotation->first_node(); objects; objects = objects->next_sibling() ) 
-		if( objects->name() == std::string("object") ){
+	for( xml_node<> *objects = annotation->first_node(); objects; objects = objects->next_sibling() )
+		if( objects->name() == std::string("object") ) {
 			names.push_back( std::string( objects->first_node("name")->value() ) );
 			xml_node<> * bbox = objects->first_node("bndbox");
 			if( !(bool)std::stoi( std::string( objects->first_node("difficult")->value() ) ) || difficult )
@@ -88,17 +88,15 @@ static dict loadEntry( const std::string & name, bool load_seg = true, bool load
 	if( load_seg ) {
 		sprintf( buf, (base_dir+VOC_OBJECT).c_str(), name.c_str() );
 		RMatrixXus olbl = readIPNG16( buf );
-		if( !olbl.diagonalSize() )
-		{
+		if( !olbl.diagonalSize() ) {
 			printf("Failed to read %s\n", buf);
 			return dict();
 		}
 		r["segmentation"] = cleanVOC(olbl);
-		
+
 		sprintf( buf, (base_dir+VOC_CLASS).c_str(), name.c_str() );
 		RMatrixXus clbl = readIPNG16( buf );
-		if( !clbl.diagonalSize() )
-		{
+		if( !clbl.diagonalSize() ) {
 			printf("Failed to read %s\n", buf);
 			return dict();
 		}
@@ -107,8 +105,7 @@ static dict loadEntry( const std::string & name, bool load_seg = true, bool load
 	if (load_im) {
 		sprintf( buf, (base_dir+VOC_IMAGES).c_str(), name.c_str() );
 		std::shared_ptr<Image8u> im = imreadShared( buf );
-		if( !im || im->empty() )
-		{
+		if( !im || im->empty() ) {
 			printf("Failed to read %s\n", buf);
 			return dict();
 		}
@@ -118,7 +115,7 @@ static dict loadEntry( const std::string & name, bool load_seg = true, bool load
 	auto boxes = readBoxes( buf, difficult );
 	r["boxes"] = std::get<0>(boxes);
 	r["box_classes"] = std::get<1>(boxes);
-	
+
 	r["name"] = name;
 	return r;
 }
@@ -136,10 +133,9 @@ template<int YEAR> std::string VOC_INFO<YEAR,false>::image_sets[3] = {"ImageSets
 template<int YEAR,bool detect,bool difficult>
 list loadVOC( bool train, bool valid, bool test ) {
 	const std::string base_dir = voc_dir + "/VOC" + std::to_string(YEAR) + "/";
-	bool read[3]={train,valid,test};
+	bool read[3]= {train,valid,test};
 	list r;
-	for( int i=0; i<3; i++ )
-	{
+	for( int i=0; i<3; i++ ) {
 		if( read[i] ) {
 			const std::string filepath = base_dir+VOC_INFO<YEAR,detect>::image_sets[i];
 			std::ifstream is_for_count(filepath), is(filepath);
@@ -151,8 +147,7 @@ list loadVOC( bool train, bool valid, bool test ) {
 			const size_t lines_count = std::count(std::istreambuf_iterator<char>(is_for_count),
 			                                      std::istreambuf_iterator<char>(), '\n');
 			is_for_count.close();
-			switch(i)
-			{
+			switch(i) {
 			case 0:
 				printf("Loading Pascal VOC training data...\n");
 				break;
