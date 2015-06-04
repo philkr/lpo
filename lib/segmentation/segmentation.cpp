@@ -535,6 +535,8 @@ RMatrixXi maskToBox( const RMatrixXs &s, const RMatrixXb &masks ) {
 				boxes(i,2) = std::max( seg_box(j,2), boxes(i,2) );
 				boxes(i,3) = std::max( seg_box(j,3), boxes(i,3) );
 			}
+		if( !masks.row(i).any() )
+			boxes(i,0) = boxes(i,1) = boxes(i,2) = boxes(i,3) = 0;
 	}
 	return boxes;
 }
