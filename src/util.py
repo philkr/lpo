@@ -124,9 +124,9 @@ def saveProposalsHDF5( p, fn, segments=True, boxes=False ):
 	f = h5py.File(fn, "w")
 	for i,pp in enumerate(p):
 		if segments:
-			dset_s = f.create_dataset("seg_%d"%i, pp.s.shape, dtype='i2', compression="lzf")
+			dset_s = f.create_dataset("seg_%d"%i, pp.s.shape, dtype='i2', compression="gzip")
 			dset_s[...] = pp.s
-			dset_s = f.create_dataset("prop_%d"%i, pp.p.shape, dtype='i1', compression="lzf")
+			dset_s = f.create_dataset("prop_%d"%i, pp.p.shape, dtype='i1', compression="gzip")
 			dset_s[...] = pp.p
 		if boxes:
 			bx = pp.toBoxes()

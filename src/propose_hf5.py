@@ -50,7 +50,7 @@ args = parser.parse_args()
 def generate( prop, over_segs, save_names, segments=True, boxes=False, max_iou=0.9, box_overlap=False ):
 	BS = 100
 	for i in range(0,len(over_segs),BS):
-		ii = min(N,i+BS)
+		ii = min(len(over_segs),i+BS)
 		props = prop.propose( over_segs[i:i+BS], max_iou, box_overlap )
 		stdout.write('%3.1f%%\r'%(100*ii/len(over_segs)))
 		for p,fn in zip( props, save_names[i:i+BS] ):
